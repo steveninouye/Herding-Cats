@@ -46,3 +46,4 @@ Herding Cats is an invite-only event management platform designed to organize gr
    ```bash
    git clone https://github.com/steveninouye/Herding-Cats.git
    cd Herding-Cats
+   ```
