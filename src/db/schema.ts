@@ -7,6 +7,7 @@ export const users = sqliteTable("users", {
     email: text("email").notNull().unique(),
     displayName: text("display_name").notNull(),
     avatarUrl: text("avatar_url"),
+    passwordHash: text("password_hash"),
     inviteToken: text("invite_token").unique(),
     invitedBy: integer("invited_by").references(() => users.id),
     inviteStatus: text("invite_status", {
