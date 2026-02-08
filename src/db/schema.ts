@@ -7,10 +7,26 @@ export const users = sqliteTable("users", {
   email: text("email").notNull().unique(),
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
-  inviteToken: text("invite_token").unique(), // for invite-only auth
+  inviteToken: text("invite_token").unique(),
   invitedBy: integer("invited_by").references(() => users.id),
-  socialScore: real("social_score").notNull().default(100.0), // starting karma
+  inviteStatus: text("invite_status", {
+    enum: ["pending", "accepted", "revoked"],
+  })
+    .notNull()
+    .default("pending"),
+  socialScore: real("social_score").notNull().default(100.0),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  // ─── Platform-level ban (Herding Cats admins only) ───
+  isPlatformBanned: integer("is_platform_banned", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  platformBannedAt: text("platform_banned_at"),
+  platformBannedBy: integer("platform_banned_by").references(() => users.id),
+  platformBanReason: text("platform_ban_reason"),
+  // ─── Platform admin flag ───
+  isPlatformAdmin: integer("is_platform_admin", { mode: "boolean" })
+    .notNull()
+    .default(false),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
@@ -46,6 +62,11 @@ export const groupMembers = sqliteTable("group_members", {
   role: text("role", { enum: ["owner", "admin", "member"] })
     .notNull()
     .default("member"),
+  // ─── Group-level ban (group admins/owners) ───
+  isBanned: integer("is_banned", { mode: "boolean" }).notNull().default(false),
+  bannedAt: text("banned_at"),
+  bannedBy: integer("banned_by").references(() => users.id),
+  banReason: text("ban_reason"),
   joinedAt: text("joined_at")
     .notNull()
     .default(sql`(datetime('now'))`),
@@ -63,10 +84,10 @@ export const events = sqliteTable("events", {
   title: text("title").notNull(),
   description: text("description"),
   location: text("location"),
-  startTime: text("start_time").notNull(), // ISO 8601 string
+  startTime: text("start_time").notNull(),
   endTime: text("end_time"),
-  maxAttendees: integer("max_attendees").notNull(), // hard cap (e.g., 24)
-  googleCalendarEventId: text("google_calendar_event_id"), // Google Calendar sync
+  maxAttendees: integer("max_attendees").notNull(),
+  googleCalendarEventId: text("google_calendar_event_id"),
   status: text("status", { enum: ["draft", "open", "closed", "cancelled"] })
     .notNull()
     .default("open"),
@@ -75,7 +96,7 @@ export const events = sqliteTable("events", {
     .default(sql`(datetime('now'))`),
 });
 
-// ─── RSVPs (The Priority Queue) ──────────────────────────
+// ─── RSVPs (current state) ──────────────────────────────
 export const rsvps = sqliteTable("rsvps", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   eventId: integer("event_id")
@@ -84,11 +105,11 @@ export const rsvps = sqliteTable("rsvps", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id),
-  rsvpTime: text("rsvp_time") // actual RSVP timestamp
+  rsvpTime: text("rsvp_time")
     .notNull()
     .default(sql`(datetime('now'))`),
-  effectiveTime: text("effective_time").notNull(), // calculated: rsvpTime + penalty
-  socialScoreAtRsvp: real("social_score_at_rsvp").notNull(), // snapshot
+  effectiveTime: text("effective_time").notNull(),
+  socialScoreAtRsvp: real("social_score_at_rsvp").notNull(),
   status: text("status", {
     enum: ["confirmed", "waitlisted", "cancelled", "no_show"],
   })
@@ -98,14 +119,38 @@ export const rsvps = sqliteTable("rsvps", {
   checkedInAt: text("checked_in_at"),
 });
 
-// ─── SOCIAL SCORE HISTORY (audit trail) ──────────────────
+// ─── RSVP HISTORY (audit trail for every RSVP change) ───
+export const rsvpHistory = sqliteTable("rsvp_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  rsvpId: integer("rsvp_id")
+    .notNull()
+    .references(() => rsvps.id),
+  eventId: integer("event_id")
+    .notNull()
+    .references(() => events.id),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
+  action: text("action", {
+    enum: ["rsvp_created", "rsvp_cancelled", "status_changed", "checked_in"],
+  }).notNull(),
+  fromStatus: text("from_status"), // nullable — null on first creation
+  toStatus: text("to_status").notNull(),
+  // ─── Timing context for karma decisions ───
+  minutesBeforeEvent: integer("minutes_before_event"), // how far out the action happened
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+// ─── SOCIAL SCORE HISTORY (karma audit trail) ────────────
 export const scoreHistory = sqliteTable("score_history", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id),
-  eventId: integer("event_id").references(() => events.id), // nullable for non-event adjustments
-  delta: real("delta").notNull(), // +5, -10, etc.
+  eventId: integer("event_id").references(() => events.id),
+  delta: real("delta").notNull(),
   reason: text("reason", {
     enum: [
       "on_time",
@@ -119,8 +164,8 @@ export const scoreHistory = sqliteTable("score_history", {
       "manual_adjustment",
     ],
   }).notNull(),
-  newScore: real("new_score").notNull(), // score after applying delta
-  createdBy: integer("created_by").references(() => users.id), // who issued it (admin/system)
+  newScore: real("new_score").notNull(),
+  createdBy: integer("created_by").references(() => users.id),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
