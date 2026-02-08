@@ -44,7 +44,6 @@ export const groups = sqliteTable("groups", {
         .notNull()
         .references(() => users.id),
     maxMembers: integer("max_members").default(50),
-    isPrivate: integer("is_private", { mode: "boolean" }).notNull().default(true),
     createdAt: text("created_at")
         .notNull()
         .default(sql`(datetime('now'))`),
