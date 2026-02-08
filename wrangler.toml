@@ -1,0 +1,9 @@
+name = "herding-cats"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_als"]
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "herding_cats_db"
+database_name = "herding-cats-db"
+database_id = "33731d3f-c23c-4989-8942-e8bdc4aa2f71"

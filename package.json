@@ -29,6 +29,7 @@
     "@builder.io/qwik-city": "^1.19.0",
     "@eslint/js": "^9.32.0",
     "@types/node": "20.19.0",
+    "drizzle-kit": "^0.31.8",
     "eslint": "9.32.0",
     "eslint-plugin-qwik": "^1.19.0",
     "globals": "16.4.0",
@@ -39,6 +40,10 @@
     "undici": "*",
     "vite": "7.3.1",
     "vite-tsconfig-paths": "^4.2.1",
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.63.0"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.0",
+    "drizzle-orm": "^0.45.1"
   }
 }
