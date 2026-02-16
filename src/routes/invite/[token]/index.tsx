@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "~/db";
 import { users } from "~/db/schema";
 

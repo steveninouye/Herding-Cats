@@ -157,7 +157,7 @@ export const acceptInvite = server$(async function (token: string) {
       and(eq(users.inviteToken, token), eq(users.inviteStatus, "pending"))
     );
 
-  if (result.rowsAffected === 0) {
+  if (result.meta.changes === 0) {
     return { success: false, error: "Invalid or already used invite" };
   }
 

@@ -1,4 +1,4 @@
-import type { RequestEvent } from "@builder.io/qwik-city";
+import type { RequestEvent, RequestEventAction } from "@builder.io/qwik-city";
 import { createToken } from "./jwt";
 
 const SESSION_COOKIE = "session";
@@ -14,7 +14,7 @@ interface SessionUser {
  * Create a JWT and set it as an httpOnly session cookie.
  */
 export async function setSession(
-  requestEvent: RequestEvent,
+  requestEvent: RequestEvent | RequestEventAction,
   user: SessionUser
 ) {
   const env = requestEvent.platform.env as { JWT_SECRET: string };
