@@ -70,6 +70,7 @@ export const groupMembers = sqliteTable("group_members", {
     // ─── Group-level ban (group admins/owners) ───
     isBanned: integer("is_banned", { mode: "boolean" }).notNull().default(false),
     bannedAt: text("banned_at"),
+    groupDisplayName: text("group_display_name"),
     bannedBy: integer("banned_by").references(() => users.id),
     banReason: text("ban_reason"),
     joinedAt: text("joined_at")
@@ -88,7 +89,16 @@ export const events = sqliteTable("events", {
         .references(() => users.id),
     title: text("title").notNull(),
     description: text("description"),
-    location: text("location"),
+    locationId: integer("location_id").references(() => locations.id),
+    locationName: text("location_name"),
+    locationLat: real("location_lat"),
+    locationLng: real("location_lng"),
+    checkInRadius: integer("check_in_radius").default(100),
+    calendarVisibility: text("calendar_visibility", {
+        enum: ["public", "private", "hidden"],
+    })
+        .notNull()
+        .default("public"),
     startTime: text("start_time").notNull(),
     endTime: text("end_time"),
     maxAttendees: integer("max_attendees").notNull(),
@@ -104,6 +114,70 @@ export const events = sqliteTable("events", {
     })
         .notNull()
         .default("private"),
+});
+
+// ─── LOCATIONS (venues) ──────────────────────────────────
+export const locations = sqliteTable("locations", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    name: text("name").notNull(),                    // "Google Soccer Field A"
+    address: text("address"),
+    lat: real("lat"),
+    lng: real("lng"),
+    checkInRadius: integer("check_in_radius").default(100), // meters
+    description: text("description"),
+    createdBy: integer("created_by")
+        .notNull()
+        .references(() => users.id),
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
+});
+
+// ─── LOCATION MANAGERS ───────────────────────────────────
+export const locationManagers = sqliteTable("location_managers", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    locationId: integer("location_id")
+        .notNull()
+        .references(() => locations.id),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id),
+    role: text("role", { enum: ["owner", "manager"] })
+        .notNull()
+        .default("manager"),
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
+});
+
+// ─── RESERVATIONS (location booking requests) ────────────
+export const reservations = sqliteTable("reservations", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    locationId: integer("location_id")
+        .notNull()
+        .references(() => locations.id),
+    eventId: integer("event_id").references(() => events.id), // linked after approval
+    requestedBy: integer("requested_by")
+        .notNull()
+        .references(() => users.id),
+    startTime: text("start_time").notNull(),
+    endTime: text("end_time").notNull(),
+    status: text("status", {
+        enum: ["pending", "approved", "rejected", "cancelled"],
+    })
+        .notNull()
+        .default("pending"),
+    // ─── Pricing ───
+    fee: real("fee").default(0),                     // 0 = free
+    isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(false),
+    // ─── Approval tracking ───
+    reviewedBy: integer("reviewed_by").references(() => users.id),
+    reviewedAt: text("reviewed_at"),
+    rejectionReason: text("rejection_reason"),
+    message: text("message"),                        // note from requester
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
 });
 
 // ─── RSVPs (current state) ──────────────────────────────
@@ -183,22 +257,22 @@ export const scoreHistory = sqliteTable("score_history", {
 
 // ─── JOIN REQUESTS (group & event approval workflow) ─────
 export const joinRequests = sqliteTable("join_requests", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  groupId: integer("group_id").references(() => groups.id),
-  eventId: integer("event_id").references(() => events.id),
-  type: text("type", { enum: ["group", "event"] }).notNull(),
-  status: text("status", {
-    enum: ["pending", "approved", "rejected"],
-  })
-    .notNull()
-    .default("pending"),
-  reviewedBy: integer("reviewed_by").references(() => users.id),
-  reviewedAt: text("reviewed_at"),
-  message: text("message"), // optional note from the requester
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(datetime('now'))`),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id),
+    groupId: integer("group_id").references(() => groups.id),
+    eventId: integer("event_id").references(() => events.id),
+    type: text("type", { enum: ["group", "event"] }).notNull(),
+    status: text("status", {
+        enum: ["pending", "approved", "rejected"],
+    })
+        .notNull()
+        .default("pending"),
+    reviewedBy: integer("reviewed_by").references(() => users.id),
+    reviewedAt: text("reviewed_at"),
+    message: text("message"), // optional note from the requester
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
 });
