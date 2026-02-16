@@ -98,7 +98,7 @@ export default component$(() => {
             <a href="/login" class="button button-primary">
               Log In
             </a>
-            <a href="/invite" class="button button-outline">
+            <a href="/signup" class="button button-outline">
               Register with Invite
             </a>
           </div>
@@ -212,7 +212,7 @@ export default component$(() => {
             <a href="/login" class="button button-primary">
               Log In
             </a>
-            <a href="/invite" class="button button-outline">
+            <a href="/signup" class="button button-outline">
               Register with Invite
             </a>
           </div>

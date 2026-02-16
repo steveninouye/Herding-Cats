@@ -16,7 +16,7 @@ export default component$(() => {
             <a href="/login">Log In</a>
           </li>
           <li>
-            <a href="/invite" class={styles.inviteBtn}>
+            <a href="/signup" class={styles.inviteBtn}>
               Register with Invite
             </a>
           </li>
