@@ -36,7 +36,7 @@ export default component$(() => {
         </div>
         <h1 class="text-5xl font-extrabold leading-tight mb-6">
           Stop Herding Cats.<br />
-          <span class="text-indigo-400">Start Building Community.</span>
+          <span class="text-indigo-400">Start Building Culture & Community.</span>
         </h1>
         <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
           An invite-only event platform that gamifies reliability. Reward the people who show up,
