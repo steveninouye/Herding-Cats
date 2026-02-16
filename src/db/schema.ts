@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 // ─── USERS ───────────────────────────────────────────────
@@ -9,7 +9,7 @@ export const users = sqliteTable("users", {
     avatarUrl: text("avatar_url"),
     passwordHash: text("password_hash"),
     inviteToken: text("invite_token").unique(),
-    invitedBy: integer("invited_by").references(() => users.id),
+    invitedBy: integer("invited_by").references((): AnySQLiteColumn => users.id),
     inviteStatus: text("invite_status", {
         enum: ["pending", "accepted", "revoked"],
     })
@@ -22,7 +22,7 @@ export const users = sqliteTable("users", {
         .notNull()
         .default(false),
     platformBannedAt: text("platform_banned_at"),
-    platformBannedBy: integer("platform_banned_by").references(() => users.id),
+    platformBannedBy: integer("platform_banned_by").references((): AnySQLiteColumn => users.id),
     platformBanReason: text("platform_ban_reason"),
     // ─── Platform admin flag ───
     isPlatformAdmin: integer("is_platform_admin", { mode: "boolean" })
@@ -67,13 +67,47 @@ export const groupMembers = sqliteTable("group_members", {
     role: text("role", { enum: ["owner", "admin", "member"] })
         .notNull()
         .default("member"),
+    groupDisplayName: text("group_display_name"),
     // ─── Group-level ban (group admins/owners) ───
     isBanned: integer("is_banned", { mode: "boolean" }).notNull().default(false),
     bannedAt: text("banned_at"),
-    groupDisplayName: text("group_display_name"),
     bannedBy: integer("banned_by").references(() => users.id),
     banReason: text("ban_reason"),
     joinedAt: text("joined_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
+});
+
+// ─── LOCATIONS (venues) ──────────────────────────────────
+export const locations = sqliteTable("locations", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    name: text("name").notNull(),                    // "Google Soccer Field A"
+    address: text("address"),
+    lat: real("lat"),
+    lng: real("lng"),
+    checkInRadius: integer("check_in_radius").default(100), // meters
+    description: text("description"),
+    createdBy: integer("created_by")
+        .notNull()
+        .references(() => users.id),
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(datetime('now'))`),
+});
+
+// ─── LOCATION MANAGERS ───────────────────────────────────
+export const locationManagers = sqliteTable("location_managers", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    locationId: integer("location_id")
+        .notNull()
+        .references(() => locations.id),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id),
+    role: text("role", { enum: ["owner", "manager"] })
+        .notNull()
+        .default("manager"),
+    createdAt: text("created_at")
         .notNull()
         .default(sql`(datetime('now'))`),
 });
@@ -114,40 +148,6 @@ export const events = sqliteTable("events", {
     })
         .notNull()
         .default("private"),
-});
-
-// ─── LOCATIONS (venues) ──────────────────────────────────
-export const locations = sqliteTable("locations", {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),                    // "Google Soccer Field A"
-    address: text("address"),
-    lat: real("lat"),
-    lng: real("lng"),
-    checkInRadius: integer("check_in_radius").default(100), // meters
-    description: text("description"),
-    createdBy: integer("created_by")
-        .notNull()
-        .references(() => users.id),
-    createdAt: text("created_at")
-        .notNull()
-        .default(sql`(datetime('now'))`),
-});
-
-// ─── LOCATION MANAGERS ───────────────────────────────────
-export const locationManagers = sqliteTable("location_managers", {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    locationId: integer("location_id")
-        .notNull()
-        .references(() => locations.id),
-    userId: integer("user_id")
-        .notNull()
-        .references(() => users.id),
-    role: text("role", { enum: ["owner", "manager"] })
-        .notNull()
-        .default("manager"),
-    createdAt: text("created_at")
-        .notNull()
-        .default(sql`(datetime('now'))`),
 });
 
 // ─── RESERVATIONS (location booking requests) ────────────
