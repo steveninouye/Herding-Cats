@@ -42,7 +42,7 @@ export default component$(() => {
       step: "1",
       icon: "✉️",
       title: "Get Invited",
-      desc: "Receive an invite from someone who believes in you.",
+      desc: "A current member sends you an invite link to join the platform.",
     },
     {
       step: "2",
@@ -95,13 +95,17 @@ export default component$(() => {
             priority access to the events you love.
           </p>
           <div class="hero-buttons">
-            <a href="/signup" class="button button-primary">
-              Get Started
+            <a href="/login" class="button button-primary">
+              Log In
             </a>
-            <a href="#how-it-works" class="button button-outline">
-              See How It Works ↓
+            <a href="/invite" class="button button-outline">
+              Register with Invite
             </a>
           </div>
+          <p class="hero-invite-note">
+            🔒 Herding Cats is invite-only. You'll need a current member to
+            send you an invite before you can join.
+          </p>
         </div>
       </div>
 
@@ -201,12 +205,21 @@ export default component$(() => {
             That <span class="highlight">Values You</span>?
           </h2>
           <p class="cta-subtitle">
-            Be part of something where showing up and helping out actually
-            matters. Request an invite and start earning Karma today.
+            Herding Cats is invite-only—ask a current member to send you an
+            invite and start earning Karma today.
           </p>
-          <a href="/invite" class="button button-primary button-large">
-            Request an Invite 🐱
-          </a>
+          <div class="hero-buttons">
+            <a href="/login" class="button button-primary">
+              Log In
+            </a>
+            <a href="/invite" class="button button-outline">
+              Register with Invite
+            </a>
+          </div>
+          <p class="cta-invite-note">
+            Don't have an invite? Ask a friend who's already on the platform to
+            invite you. That's how we keep the community trusted and strong. 💛
+          </p>
         </div>
       </div>
     </>
@@ -214,7 +227,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Herding Cats — Community-First Event Management",
+  title: "Herding Cats — Invite-Only Community Event Management",
   meta: [
     {
       name: "description",

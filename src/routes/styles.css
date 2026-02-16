@@ -25,7 +25,10 @@ body {
 }
 
 /* HEADINGS ------------------------------------- */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   color: #1e293b;
   margin: 0;
 }
@@ -60,9 +63,17 @@ h4 {
 }
 
 @media screen and (min-width: 768px) {
-  h1 { font-size: 3.8rem; }
-  h2 { font-size: 2.6rem; }
-  h3 { font-size: 1.5rem; }
+  h1 {
+    font-size: 3.8rem;
+  }
+
+  h2 {
+    font-size: 2.6rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
 }
 
 /* TAGS ----------------------------------------- */
@@ -417,4 +428,26 @@ ul {
   max-width: 500px;
   margin: 16px auto 32px;
   line-height: 1.7;
+}
+
+/* INVITE NOTE ---------------------------------- */
+.hero-invite-note {
+  margin-top: 24px;
+  font-size: 0.85rem;
+  color: #92400e;
+  background: #fef3c7;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #fde68a;
+}
+
+.cta-invite-note {
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: #64748b;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
 }

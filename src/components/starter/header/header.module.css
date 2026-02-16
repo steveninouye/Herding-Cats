@@ -57,16 +57,18 @@
   color: #f59e0b;
 }
 
-.inviteBtn {
-  background: linear-gradient(135deg, #f59e0b, #f97316) !important;
-  color: white !important;
+.header li .inviteBtn {
+  display: inline-block;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: white;
   padding: 8px 20px;
   border-radius: 8px;
-  font-weight: 600 !important;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
-.inviteBtn:hover {
+.header li .inviteBtn:hover {
+  color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }

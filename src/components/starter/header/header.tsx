@@ -17,7 +17,7 @@ export default component$(() => {
           </li>
           <li>
             <a href="/invite" class={styles.inviteBtn}>
-              Request Invite
+              Register with Invite
             </a>
           </li>
         </ul>
