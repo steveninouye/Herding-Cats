@@ -13,15 +13,14 @@ import { getDb } from "~/db";
 import { users } from "~/db/schema";
 import { hashPassword } from "~/lib/password";
 import { setSession } from "~/lib/session";
-import { getSessionPayload } from "~/middleware/auth";
 import styles from "./signup.module.css";
 
 /**
  * If the user is already logged in, redirect to home.
  */
 export const useRedirectIfAuthed = routeLoader$(async (requestEvent) => {
-  const payload = await getSessionPayload(requestEvent);
-  if (payload) {
+  const token = requestEvent.cookie.get("session")?.value;
+  if (token) {
     throw requestEvent.redirect(302, "/");
   }
   return {};
