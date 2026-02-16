@@ -5,19 +5,70 @@ export default component$(() => {
   const activeFeature = useSignal(0);
 
   const features = [
-    { icon: "fa-users-gear", title: "Groups & Events", desc: "Create private, visible, or public groups. Organize events with hard-cap RSVPs, waitlists, and priority queuing." },
-    { icon: "fa-star", title: "Social Score (Karma)", desc: "Gamified reliability tracking. Show up on time, help out, and climb the ranks. Flake out, and you'll feel it." },
-    { icon: "fa-location-dot", title: "Geo Check-In", desc: "Privacy-first geolocation check-in. No location data stored—just a simple confirmation you showed up." },
-    { icon: "fa-calendar-check", title: "Smart RSVPs", desc: "Priority algorithm rewards reliable members. Your effective RSVP time improves as your Social Score rises." },
-    { icon: "fa-building", title: "Venue Management", desc: "Register locations, manage reservations, and control calendar visibility. Perfect for facility owners." },
-    { icon: "fa-envelope-open-text", title: "Invite-Only Access", desc: "Quality over quantity. Every member is vouched for through a tracked invite chain." },
+    {
+      icon: "fa-users-gear",
+      title: "Groups & Events",
+      desc: "Create private, visible, or public groups. Organize events with hard-cap RSVPs, waitlists, and priority queuing.",
+    },
+    {
+      icon: "fa-hand-holding-heart",
+      title: "Community Karma",
+      desc: "Earn Karma by contributing to your community—show up on time, lend a hand, bring gear. Your good vibes come back to you.",
+    },
+    {
+      icon: "fa-location-dot",
+      title: "Geo Check-In",
+      desc: "Privacy-first geolocation check-in. No location data stored—just a simple confirmation you showed up.",
+    },
+    {
+      icon: "fa-calendar-check",
+      title: "Smart RSVPs",
+      desc: "The more you contribute, the better your priority. Reliable community members get first dibs on events.",
+    },
+    {
+      icon: "fa-building",
+      title: "Venue Management",
+      desc: "Register locations, manage reservations, and control calendar visibility. Perfect for facility owners.",
+    },
+    {
+      icon: "fa-envelope-open-text",
+      title: "Invite-Only Access",
+      desc: "A trusted community starts with trusted people. Every member is vouched for through a tracked invite chain.",
+    },
   ];
 
   const howItWorks = [
-    { step: "1", title: "Get Invited", desc: "Receive an invite from an existing member to join the platform." },
-    { step: "2", title: "Join Groups", desc: "Find or create groups for your activities—sports leagues, game nights, meetups." },
-    { step: "3", title: "RSVP to Events", desc: "Claim your spot. Priority goes to members with the best track record." },
-    { step: "4", title: "Show Up & Check In", desc: "Arrive on time, check in via geolocation, and build your reputation." },
+    {
+      step: "1",
+      icon: "✉️",
+      title: "Get Invited",
+      desc: "Receive an invite from someone who believes in you.",
+    },
+    {
+      step: "2",
+      icon: "🤝",
+      title: "Join Groups",
+      desc: "Find your people—sports leagues, game nights, meetups, and more.",
+    },
+    {
+      step: "3",
+      icon: "🎉",
+      title: "RSVP & Contribute",
+      desc: "Claim your spot and pitch in. Bring gear, help set up, be awesome.",
+    },
+    {
+      step: "4",
+      icon: "⭐",
+      title: "Earn Karma",
+      desc: "Every contribution earns Karma. Track your impact and unlock priority access.",
+    },
+  ];
+
+  const karmaActions = [
+    { label: "Showed up on time", icon: "⏰", positive: true },
+    { label: "Brought gear", icon: "🎒", positive: true },
+    { label: "Helped out", icon: "🙌", positive: true },
+    { label: "Made someone's day", icon: "💛", positive: true },
   ];
 
   useVisibleTask$(() => {
@@ -30,136 +81,145 @@ export default component$(() => {
   return (
     <>
       {/* Hero */}
-      <section class="text-center px-6 pt-20 pb-16 max-w-4xl mx-auto">
-        <div class="inline-block bg-indigo-900 bg-opacity-40 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full mb-6 tracking-wide uppercase">
-          Invite-Only Event Platform
+      <div class="hero-section">
+        <div class="container container-center">
+          <p class="hero-badge">🐱 Invite-Only Community Platform</p>
+          <h1>
+            People Helping People.
+            <br />
+            <span class="highlight">That's the Whole Idea.</span>
+          </h1>
+          <p class="hero-subtitle">
+            Herding Cats is a community-first event platform where your
+            contributions matter. Show up, pitch in, earn Karma—and get
+            priority access to the events you love.
+          </p>
+          <div class="hero-buttons">
+            <a href="/signup" class="button button-primary">
+              Get Started
+            </a>
+            <a href="#how-it-works" class="button button-outline">
+              See How It Works ↓
+            </a>
+          </div>
         </div>
-        <h1 class="text-5xl font-extrabold leading-tight mb-6">
-          Stop Herding Cats.<br />
-          <span class="text-indigo-400">Start Building Culture & Community.</span>
-        </h1>
-        <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-          An invite-only event platform that gamifies reliability. Reward the people who show up,
-          and stop letting flakes ruin your plans.
-        </p>
-        <div class="flex justify-center space-x-4">
-          <a href="/login" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-lg transition shadow-lg shadow-indigo-900/50 text-base">
-            Get Started
-          </a>
-          <a href="#features" class="border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium px-8 py-3 rounded-lg transition text-base">
-            Learn More ↓
-          </a>
-        </div>
-      </section>
+      </div>
 
-      {/* Social Score Preview */}
-      <section class="max-w-4xl mx-auto px-6 pb-20">
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
-          <div class="flex-1">
-            <h3 class="text-xl font-bold mb-2">Your Social Score</h3>
-            <p class="text-gray-400 text-sm mb-4">
-              Every action builds your reputation. On-time arrivals, helping out, and reliability
-              boost your score. No-shows and late cancels bring it down.
-            </p>
-            <div class="flex items-center space-x-6 text-sm">
-              <div class="flex items-center space-x-1 text-green-400">
-                <span>↑ on_time</span>
-              </div>
-              <div class="flex items-center space-x-1 text-green-400">
-                <span>↑ helped_out</span>
-              </div>
-              <div class="flex items-center space-x-1 text-red-400">
-                <span>↓ no_show</span>
-              </div>
-              <div class="flex items-center space-x-1 text-red-400">
-                <span>↓ late_cancel</span>
-              </div>
+      {/* Karma Preview */}
+      <div class="karma-section">
+        <div class="container">
+          <div class="karma-card">
+            <div class="karma-header">
+              <h3>🌟 Your Karma Journey</h3>
+              <p>
+                Every time you contribute to your community, you earn Karma.
+                It's our way of saying <strong>thank you</strong> for being
+                awesome.
+              </p>
             </div>
-          </div>
-          <div class="flex-shrink-0 text-center">
-            <div class="relative w-32 h-32">
-              <svg viewBox="0 0 120 120" class="w-full h-full">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="#1e1b4b" stroke-width="8" />
-                <circle cx="60" cy="60" r="52" fill="none" stroke="#6366f1" stroke-width="8"
-                  stroke-dasharray="326.7" stroke-dashoffset="32.67" stroke-linecap="round"
-                  transform="rotate(-90 60 60)" />
-              </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <span class="text-3xl font-bold text-indigo-400">92.5</span>
-                <span class="text-xs text-gray-500">/ 100</span>
+            <div class="karma-grid">
+              {karmaActions.map((action) => (
+                <div key={action.label} class="karma-action">
+                  <span class="karma-action-icon">{action.icon}</span>
+                  <span class="karma-action-label">{action.label}</span>
+                  <span class="karma-action-badge">+Karma</span>
+                </div>
+              ))}
+            </div>
+            <div class="karma-score-display">
+              <div class="karma-score-ring">
+                <span class="karma-score-number">92.5</span>
+                <span class="karma-score-label">Your Karma</span>
               </div>
+              <p class="karma-score-message">
+                You're a community rockstar! 🎸 Your contributions have earned
+                you priority access to upcoming events.
+              </p>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Features */}
-      <section id="features" class="max-w-6xl mx-auto px-6 pb-20">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold mb-3">Built for Reliability</h2>
-          <p class="text-gray-400 max-w-xl mx-auto">
-            Every feature is designed to reward the people who show up and make organizing effortless.
+      <div class="features-section">
+        <div class="container container-center">
+          <h2>
+            Built for <span class="highlight">Community</span>
+          </h2>
+          <p class="section-subtitle">
+            Every feature is designed to make organizing easier and reward the
+            people who make events great.
           </p>
+          <div class="features-grid">
+            {features.map((f, i) => (
+              <div
+                key={f.title}
+                class={`feature-card ${activeFeature.value === i ? "feature-card-active" : ""}`}
+                onMouseEnter$={() => {
+                  activeFeature.value = i;
+                }}
+              >
+                <div class="feature-icon">
+                  <i class={`fa-solid ${f.icon}`}></i>
+                </div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f, i) => (
-            <div
-              key={i}
-              class={`p-6 rounded-xl border transition-all cursor-pointer ${
-                activeFeature.value === i
-                  ? "bg-indigo-950 border-indigo-700 shadow-lg shadow-indigo-900/20"
-                  : "bg-gray-900 border-gray-800 hover:border-gray-700"
-              }`}
-              onClick$={() => { activeFeature.value = i; }}
-            >
-              <h3 class="font-semibold text-base mb-2">{f.title}</h3>
-              <p class="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
 
       {/* How It Works */}
-      <section class="max-w-4xl mx-auto px-6 pb-20">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold mb-3">How It Works</h2>
-          <p class="text-gray-400">Four simple steps to a more reliable community.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {howItWorks.map((item, i) => (
-            <div key={i} class="text-center">
-              <div class="w-12 h-12 rounded-full bg-indigo-600 text-white font-bold text-lg flex items-center justify-center mx-auto mb-4">
-                {item.step}
+      <div id="how-it-works" class="how-it-works-section">
+        <div class="container container-center">
+          <h2>
+            How It <span class="highlight">Works</span>
+          </h2>
+          <p class="section-subtitle">
+            Four simple steps to becoming a valued community contributor.
+          </p>
+          <div class="steps-grid">
+            {howItWorks.map((item) => (
+              <div key={item.step} class="step-card">
+                <div class="step-icon">{item.icon}</div>
+                <div class="step-number">Step {item.step}</div>
+                <h4>{item.title}</h4>
+                <p>{item.desc}</p>
               </div>
-              <h4 class="font-semibold mb-1">{item.title}</h4>
-              <p class="text-gray-400 text-sm">{item.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </section>
+      </div>
 
       {/* CTA */}
-      <section class="max-w-4xl mx-auto px-6 pb-20">
-        <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 border border-indigo-800 rounded-2xl p-12 text-center">
-          <h2 class="text-3xl font-bold mb-4">Ready to Stop Herding Cats?</h2>
-          <p class="text-indigo-200 mb-8 max-w-lg mx-auto">
-            Join an invite-only community that values showing up. Request an invite or ask a member to bring you in.
+      <div class="cta-section">
+        <div class="container container-center">
+          <h2>
+            Ready to Join a Community
+            <br />
+            That <span class="highlight">Values You</span>?
+          </h2>
+          <p class="cta-subtitle">
+            Be part of something where showing up and helping out actually
+            matters. Request an invite and start earning Karma today.
           </p>
-          <a href="/login" class="bg-white text-indigo-900 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition shadow-lg text-base">
-            Request an Invite
+          <a href="/invite" class="button button-primary button-large">
+            Request an Invite 🐱
           </a>
         </div>
-      </section>
+      </div>
     </>
   );
 });
 
 export const head: DocumentHead = {
-  title: "Herding Cats — Invite-Only Event Management",
+  title: "Herding Cats — Community-First Event Management",
   meta: [
     {
       name: "description",
-      content: "An invite-only event platform that gamifies reliability. Organize groups, manage events, and reward the people who show up.",
+      content:
+        "An invite-only event platform built around community contributions. Organize groups, manage events, earn Karma, and get priority access by being a great community member.",
     },
   ],
 };
