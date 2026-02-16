@@ -27,7 +27,7 @@ export default component$(() => {
   );
 });
 
-const PUBLIC_PATHS = ["/login", "/signup", "/invite"];
+const PUBLIC_PATHS = ["/", "/login", "/signup", "/invite"];
 
 export const onRequest: RequestHandler = async (requestEvent) => {
   const path = requestEvent.url.pathname;
