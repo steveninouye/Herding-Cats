@@ -1,6 +1,8 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@builder.io/qwik-city";
+import { clearSession } from "~/lib/session";
 
 export const onGet: RequestHandler = async (requestEvent) => {
-  requestEvent.cookie.delete("userId", { path: "/" });
-  throw requestEvent.redirect(302, "/login");
+    clearSession(requestEvent);
+    throw requestEvent.redirect(302, "/login");
 };

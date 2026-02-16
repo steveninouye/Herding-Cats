@@ -7,3 +7,6 @@ pages_build_output_dir = "./dist"
 binding = "herding_cats_db"
 database_name = "herding-cats-db"
 database_id = "33731d3f-c23c-4989-8942-e8bdc4aa2f71"
+
+[vars]
+JWT_SECRET = "your-secret-key-change-this-to-something-random-and-long"
