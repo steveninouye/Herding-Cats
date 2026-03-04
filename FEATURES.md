@@ -26,7 +26,7 @@
 
 ## Project Overview
 
-**Herding Cats** is an invite-only event management platform designed to organize groups, manage events, and gamify user behavior to encourage reliability. Unlike traditional platforms, Herding Cats uses a Karma-based "Social Score" system to prioritize active and reliable community members.
+**Herding Cats** is an invite-only event management platform designed to organize groups, manage events, and celebrate positive community contributions. Unlike traditional platforms, Herding Cats uses a Karma-based system to recognize and reward active, reliable community members who make their communities better.
 
 ### Target Scale
 - ~1,000 users maximum
@@ -35,22 +35,24 @@
 
 ### Key Differentiators
 - **Invite-only ecosystem** maintains community quality
-- **Karma system** gamifies reliability and positive contributions
+- **Dual karma system** celebrates contributions at both global and group levels
+- **Teams & sub-groups** enable flexible organization within communities
 - **Privacy-first** approach to location and check-in data
-- **Smart RSVP** with priority algorithms beyond first-come-first-served
+- **Smart RSVP** with priority algorithms that reward active contributors
 
 ---
 
 ## Core Philosophy
 
-### "People Helping People"
+### "People Contributing to Communities"
 
-The platform is built around fostering a **reliable, supportive community**. Every feature is designed with this philosophy in mind:
+The platform is built around **celebrating and supporting positive community contributions**. Every feature is designed to recognize and uplift members who make their communities better:
 
-- **Trust through Transparency**: Invite chains are tracked, actions are logged
-- **Gamified Reliability**: Karma system rewards positive behavior
-- **Community Ownership**: Groups are self-moderating with clear role hierarchies
+- **Trust through Transparency**: Invite chains are tracked, contributions are celebrated
+- **Recognizing Contributions**: Karma system highlights positive behavior and community involvement
+- **Community Ownership**: Groups are self-moderating with flexible role structures
 - **Respect for Privacy**: Location data and check-ins are handled with care
+- **Positive Framing**: Focus on rewarding good behavior, not punishing mistakes
 
 ---
 
@@ -103,7 +105,7 @@ User
 ### 2. Groups & Roles
 
 #### Overview
-Flexible group management with privacy controls and hierarchical roles for self-moderation.
+Flexible group management with privacy controls, hierarchical roles, and support for multiple owners and teams within groups.
 
 #### Group Visibility Levels
 
@@ -117,22 +119,47 @@ Flexible group management with privacy controls and hierarchical roles for self-
 
 | Role | Permissions |
 |------|-------------|
-| **Owner** | Full control: delete group, transfer ownership, manage all roles |
-| **Admin** | Manage members, events, locations; cannot delete group or manage other admins |
+| **Owner** | Full control: delete group, manage ownership, manage all roles (multiple owners allowed) |
+| **Admin** | Manage members, events, locations; cannot delete group or manage owners |
 | **Member** | Participate in events, RSVP, view group content |
 
 #### Key Features
+- **Multiple Owners**: Groups can have multiple owners for shared leadership and responsibility
 - Group-specific display names
 - Group-level banning (separate from platform bans)
 - Member management and role assignment
 - Group settings and preferences
 
+#### Teams & Sub-groups
+
+Groups can create **teams** (sub-groups) within them for better organization:
+
+##### Use Cases
+- **Sports**: An under-18 soccer group with 100 members can form teams of 15 players each
+- **Projects**: A community group can create specialized teams for different activities
+- **Events**: Teams can organize and participate in activities together
+
+##### Algorithm-Based Team Formation
+Teams can be formed automatically using smart algorithms that consider:
+- **Skill Level**: Balance teams based on member skill ratings
+- **Position/Role**: Distribute positions fairly (e.g., goalkeepers, defenders, forwards)
+- **Fair Division**: Ensure competitive balance across teams
+- **Preferences**: Account for member preferences when possible
+
+##### Team Structure
+- Teams exist within a parent group
+- Team members must be members of the parent group
+- Teams can have their own admins/captains
+- Teams can participate in group events as a unit
+
 #### Business Rules
-- Every group must have exactly one Owner
+- Groups can have **one or more Owners** for shared leadership
+- Owners can add or remove other owners (minimum one owner required)
 - Ownership can be transferred to Admins
 - Admins can promote Members to Admin
 - Members can leave groups voluntarily
 - Banned members cannot rejoin without admin approval
+- Teams inherit visibility settings from parent group by default
 
 ---
 
@@ -210,7 +237,7 @@ Privacy-first event management with location-based check-in capabilities and cal
 ### 5. RSVP & Priority Algorithm
 
 #### Overview
-Smart RSVP system with hard caps and karma-based priority for waitlist management.
+Smart RSVP system with hard caps, karma-based priority for waitlist management, and support for team/group RSVPs.
 
 #### Key Features
 
@@ -240,56 +267,128 @@ Effective_Time = Actual_RSVP_Time + (Karma_Modifier × Time_Penalty)
 | `cancelled` | User cancelled their RSVP |
 | `no-show` | Did not attend despite RSVP |
 
+##### Team & Group RSVP
+
+Teams or entire groups can RSVP to events as a unit:
+
+**Use Cases:**
+- **Sports Matches**: Two teams scheduling a game at a venue
+- **Group Activities**: A group booking a venue for a shared event
+- **Inter-group Events**: Multiple groups coordinating attendance
+
+**Cancellation Visibility:**
+- When a team/group cancels or an event doesn't meet minimum requirements, the venue becomes **visible as available** to other teams/groups
+- This helps maximize venue utilization and gives other groups opportunities to use freed-up spaces
+- Notifications sent to interested parties when venues become available
+
+**Team RSVP Features:**
+- Team captain/admin can RSVP on behalf of the team
+- Individual team members can confirm their participation within the team RSVP
+- Minimum attendance thresholds can be set (e.g., need 11 players for a soccer match)
+- Events auto-cancel or flag for review if minimums aren't met
+
 ##### Flake Protection
 - Tracks `minutesBeforeEvent` for cancellations
-- Last-minute cancellations impact karma
-- Establishes patterns for chronic flakers
+- Last-minute cancellations impact karma (with understanding for emergencies)
+- Identifies patterns to help members improve their reliability
 
 #### Business Rules
-- RSVPs can be cancelled any time, but timing affects karma
+- RSVPs can be cancelled any time, but timing affects karma recognition
 - Waitlist auto-promotes when spots open
 - No-show status assigned if no check-in by event end
 - Event organizers can manually override RSVP status
+- Team RSVPs count toward capacity based on confirmed individual members
+- Cancelled team events release venues back to the availability pool
 
 ---
 
 ### 6. Community Contributions (Karma)
 
 #### Overview
-The gamified reliability system that encourages positive community participation through a point-based Karma score.
+A dual karma system that celebrates positive community participation through both **global** and **group-based** scores. The system focuses on recognizing contributions rather than punishing mistakes.
 
-#### Starting Score
-Every new user begins with a Karma score of **100.0**
+#### Dual Karma System
 
-#### Karma Modifications
+Users have **two types of karma scores**:
+
+##### Global Karma
+- Platform-wide reputation score
+- Reflects overall community contribution across all groups
+- Used for platform-level privileges and recognition
+- Starting score: **100.0**
+
+##### Group Karma
+- Separate karma score for each group the user belongs to
+- Reflects contribution within that specific community
+- Used for group-level RSVP priority and recognition
+- Starting score: **100.0** per group
+- Groups can have different karma rules and values
+
+#### Default Karma Values (Customizable)
 
 ##### Positive Contributions (+Karma)
-| Action | Points | Notes |
-|--------|--------|-------|
+| Action | Default Points | Notes |
+|--------|----------------|-------|
 | On-time check-in | +2 | Within check-in window |
 | Early arrival | +1 | Bonus for being early |
+| Bringing food/snacks | +5 | Sharing with the community |
 | Bringing gear/supplies | +3 | Community contribution |
 | Helping with setup/cleanup | +2-5 | Varies by effort |
 | Positive peer recognition | +1-3 | From other members |
 
-##### Negative Contributions (-Karma)
-| Action | Points | Notes |
-|--------|--------|-------|
-| No-show | -10 | Did not attend or cancel |
+##### Areas for Improvement (-Karma)
+| Action | Default Points | Notes |
+|--------|----------------|-------|
+| No-show (RSVP'd but didn't attend) | -100 | Significant impact on others |
+| Late (per minute) | -1 | Configurable per group |
 | Late cancellation (<24h) | -5 | Reduces to -2 if >24h notice |
-| Late arrival | -2 | After grace period |
 | Aggressive behavior | -5 to -20 | Per moderation review |
-| Peer complaints | -1 to -5 | Verified complaints |
+
+#### Customizable Karma System
+
+**Moderators can configure karma point values for their group:**
+
+##### How It Works
+- Group owners/admins can customize point values for any action
+- Each group can have its own karma rules tailored to their community
+- Custom actions can be created beyond the defaults
+
+##### Example Configurations
+
+**Casual Sports Group:**
+```
++5  Bringing snacks/drinks
++2  On-time arrival
++1  Positive attitude recognition
+-10 No-show without notice
+```
+
+**Competitive League:**
+```
++10 MVP recognition
++5  Perfect attendance streak
++3  Bringing required equipment
+-1  Per minute late
+-50 Game day no-show
+```
+
+**Study Group:**
+```
++5  Sharing study materials
++3  Helping other members
++2  Showing up prepared
+-5  Late cancellation
+```
 
 #### Karma Thresholds
 
 | Score Range | Status | Effects |
 |-------------|--------|---------|
-| 120+ | ⭐ Excellent | Priority RSVP, trusted member badges |
-| 100-119 | ✅ Good | Standard member |
-| 70-99 | ⚠️ Warning | Reduced RSVP priority |
-| 50-69 | 🔶 Probation | Limited event access |
-| <50 | 🔴 At Risk | Subject to review/ban |
+| 120+ | ⭐ Outstanding Contributor | Priority RSVP, trusted member recognition |
+| 100-119 | ✅ Active Contributor | Standard member |
+| 70-99 | 📈 Building Reputation | Encouraged to participate more |
+| 50-69 | 🔶 Needs Engagement | Guided support offered |
+| <50 | 🔴 Review Needed | Community check-in and support |
 
 #### Audit Trail
 Every karma change is logged in the `ScoreHistory` table:
@@ -298,14 +397,17 @@ Every karma change is logged in the `ScoreHistory` table:
 - New score
 - Delta (+/-)
 - Reason/description
-- Related entity (event, user, etc.)
+- Related entity (event, user, group, etc.)
+- Score type (global or group-specific)
 
 #### Business Rules
 - Karma changes are immutable (logged, not editable)
-- Admins can award/deduct karma with documented reasons
+- Admins can award karma with documented reasons to recognize contributions
 - Automated karma changes occur after event completion
-- Users can view their karma history
+- Users can view their karma history for both global and per-group scores
 - Score decay may apply for inactive users (configurable)
+- Group karma configurations are managed by group owners/admins
+- Default values are used if no custom configuration is set
 
 ---
 
@@ -515,8 +617,11 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Group CRUD | ❌ | |
+| Multiple Owners | ❌ | Support for shared group leadership |
 | Role Management | ❌ | |
 | Visibility Settings | ❌ | |
+| Teams/Sub-groups | ❌ | Sub-group creation within groups |
+| Algorithm Team Formation | ❌ | Skill/position-based team balancing |
 
 ### Feature 3: Locations
 | Component | Status | Notes |
@@ -538,12 +643,16 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
 | Basic RSVP | ❌ | |
 | Waitlist | ❌ | |
 | Priority Algorithm | ❌ | |
+| Team/Group RSVP | ❌ | Teams can RSVP as a unit |
+| Cancellation Visibility | ❌ | Freed venues visible to others |
 
 ### Feature 6: Karma
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Score Tracking | ❌ | |
+| Global Score Tracking | ❌ | Platform-wide karma |
+| Group Score Tracking | ❌ | Per-group karma scores |
 | Karma Modifiers | ❌ | |
+| Customizable Point Values | ❌ | Moderator-configurable points |
 | History/Audit | ❌ | |
 
 ### Feature 7: Moderation
