@@ -1,4 +1,5 @@
 // src/global.d.ts
 interface Env {
-  DB: D1Database;
+  herding_cats_db: D1Database;
+  JWT_SECRET: string;
 }

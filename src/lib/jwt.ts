@@ -1,21 +1,26 @@
-const ALGORITHM: HmacImportParams = { name: "HMAC", hash: "SHA-256" };
-const EXPIRY_SECONDS = 60 * 60 * 24 * 7; // 7 days
-
-export interface JwtPayload {
-  userId: number;
-  email: string;
-  isPlatformAdmin: boolean;
-  iat: number;
-  exp: number;
-}
+// src/lib/jwt.ts
+/**
+ * Minimal JWT implementation using Web Crypto API.
+ * Compatible with Cloudflare Workers (no Node.js crypto).
+ */
 
 function base64UrlEncode(data: string): string {
-  return btoa(data).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(data);
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function base64UrlDecode(data: string): string {
-  const padded = data.replace(/-/g, "+").replace(/_/g, "/");
-  return atob(padded);
+function base64UrlDecode(str: string): string {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) base64 += "=";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 async function getKey(secret: string): Promise<CryptoKey> {
@@ -23,74 +28,89 @@ async function getKey(secret: string): Promise<CryptoKey> {
   return crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
-    ALGORITHM,
+    { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign", "verify"]
   );
 }
 
-async function sign(input: string, secret: string): Promise<string> {
+export interface JWTPayload {
+  userId: number;
+  email: string;
+  isPlatformAdmin: boolean;
+  exp?: number;
+  iat?: number;
+}
+
+export async function createToken(
+  payload: Omit<JWTPayload, "exp" | "iat">,
+  secret: string,
+  expiresInSeconds = 60 * 60 * 24 * 7 // 7 days
+): Promise<string> {
+  const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const now = Math.floor(Date.now() / 1000);
+  const body = base64UrlEncode(
+    JSON.stringify({
+      ...payload,
+      iat: now,
+      exp: now + expiresInSeconds,
+    })
+  );
+
   const key = await getKey(secret);
   const encoder = new TextEncoder();
   const signature = await crypto.subtle.sign(
-    ALGORITHM.name,
+    "HMAC",
     key,
-    encoder.encode(input)
+    encoder.encode(`${header}.${body}`)
   );
-  return base64UrlEncode(
-    String.fromCharCode(...new Uint8Array(signature))
-  );
+
+  const sigStr = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return `${header}.${body}.${sigStr}`;
 }
 
-/**
- * Create a signed JWT token.
- */
-export async function createToken(
-  payload: Omit<JwtPayload, "iat" | "exp">,
-  secret: string
-): Promise<string> {
-  const header = base64UrlEncode(
-    JSON.stringify({ alg: "HS256", typ: "JWT" })
-  );
-
-  const now = Math.floor(Date.now() / 1000);
-  const fullPayload: JwtPayload = {
-    ...payload,
-    iat: now,
-    exp: now + EXPIRY_SECONDS,
-  };
-
-  const encodedPayload = base64UrlEncode(JSON.stringify(fullPayload));
-  const signature = await sign(`${header}.${encodedPayload}`, secret);
-
-  return `${header}.${encodedPayload}.${signature}`;
-}
-
-/**
- * Verify and decode a JWT token.
- * Returns the payload if valid, null if invalid or expired.
- */
 export async function verifyToken(
   token: string,
   secret: string
-): Promise<JwtPayload | null> {
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-
-  const [header, payload, signature] = parts;
-
-  // Verify signature
-  const expectedSignature = await sign(`${header}.${payload}`, secret);
-  if (signature !== expectedSignature) return null;
-
-  // Decode and check expiry
+): Promise<JWTPayload | null> {
   try {
-    const decoded: JwtPayload = JSON.parse(base64UrlDecode(payload));
-    const now = Math.floor(Date.now() / 1000);
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
 
-    if (decoded.exp < now) return null;
+    const [header, body, sig] = parts;
+    const key = await getKey(secret);
+    const encoder = new TextEncoder();
 
-    return decoded;
+    // Reconstruct signature bytes
+    let sigBase64 = sig.replace(/-/g, "+").replace(/_/g, "/");
+    while (sigBase64.length % 4) sigBase64 += "=";
+    const sigBinary = atob(sigBase64);
+    const sigBytes = new Uint8Array(sigBinary.length);
+    for (let i = 0; i < sigBinary.length; i++) {
+      sigBytes[i] = sigBinary.charCodeAt(i);
+    }
+
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBytes,
+      encoder.encode(`${header}.${body}`)
+    );
+
+    if (!valid) return null;
+
+    const payload: JWTPayload = JSON.parse(base64UrlDecode(body));
+
+    // Check expiration
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+
+    return payload;
   } catch {
     return null;
   }

@@ -1,8 +1,8 @@
 // src/routes/login/index.tsx
 import { component$, useSignal } from "@builder.io/qwik";
 import {
-  routeAction$,
   routeLoader$,
+  routeAction$,
   zod$,
   z,
   Form,
@@ -13,65 +13,50 @@ import { getDb } from "~/db";
 import { users } from "~/db/schema";
 import { verifyPassword } from "~/lib/password";
 import { setSession } from "~/lib/session";
-import styles from "./login.module.css";
 
-/**
- * If the user is already logged in, redirect to home.
- */
 export const useRedirectIfAuthed = routeLoader$(async (requestEvent) => {
   const token = requestEvent.cookie.get("session")?.value;
   if (token) {
-    throw requestEvent.redirect(302, "/");
+    throw requestEvent.redirect(302, "/dashboard");
   }
   return {};
 });
 
-/**
- * Login action — validates credentials, sets JWT session cookie.
- */
 export const useLogin = routeAction$(
   async (data, requestEvent) => {
     const env = requestEvent.platform.env as { herding_cats_db: D1Database };
     const db = getDb(env.herding_cats_db);
 
-    // 1. Find user by email (case-insensitive)
-    const email = data.email.toLowerCase().trim();
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(eq(users.email, data.email.toLowerCase().trim()))
       .get();
 
     if (!user || !user.passwordHash) {
       return { success: false, error: "Invalid email or password" };
     }
 
-    // 2. Must be an accepted, active, non-banned user
     if (user.inviteStatus !== "accepted") {
-      return { success: false, error: "Account not yet activated. Please complete your invite signup first." };
-    }
-    if (!user.isActive) {
-      return { success: false, error: "Account has been deactivated. Contact a platform admin." };
-    }
-    if (user.isPlatformBanned) {
-      return { success: false, error: "Account has been suspended." };
+      return { success: false, error: "Account not yet activated. Please complete signup via your invite link." };
     }
 
-    // 3. Verify password
+    if (user.isPlatformBanned) {
+      return { success: false, error: "Your account has been suspended." };
+    }
+
     const valid = await verifyPassword(data.password, user.passwordHash);
     if (!valid) {
       return { success: false, error: "Invalid email or password" };
     }
 
-    // 4. Set session cookie
     await setSession(requestEvent, {
       id: user.id,
       email: user.email,
-      isPlatformAdmin: user.isPlatformAdmin,
+      isPlatformAdmin: user.isPlatformAdmin ?? false,
     });
 
-    // 5. Redirect to dashboard
-    throw requestEvent.redirect(302, "/");
+    throw requestEvent.redirect(302, "/dashboard");
   },
   zod$({
     email: z.string().email("Please enter a valid email"),
@@ -80,122 +65,110 @@ export const useLogin = routeAction$(
 );
 
 export default component$(() => {
-  useRedirectIfAuthed(); // triggers the loader
+  useRedirectIfAuthed();
   const loginAction = useLogin();
   const showPassword = useSignal(false);
 
   return (
-    <div class={styles.loginPage}>
-      <div class={styles.card}>
-        {/* Logo */}
-        <div class={styles.logo}>
-          <span class={styles.logoEmoji}>🐱</span>
-        </div>
-
-        <h3 class={styles.heading}>Welcome Back</h3>
-        <p class={styles.subtext}>
-          Sign in to your Herding Cats account
-        </p>
-
-        {/* Server Error */}
-        {loginAction.value?.error && (
-          <div class={styles.formError}>
-            {loginAction.value.error}
-          </div>
-        )}
-
-        <Form action={loginAction}>
-          {/* Email */}
-          <div class={styles.fieldGroup}>
-            <label class={styles.label} for="email">
-              Email
-            </label>
-            <input
-              class={[
-                styles.input,
-                loginAction.value?.fieldErrors?.email ? styles.inputError : "",
-              ]}
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-            />
-            {loginAction.value?.fieldErrors?.email && (
-              <p class={styles.fieldError}>
-                {loginAction.value.fieldErrors.email}
-              </p>
-            )}
+    <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+          {/* Logo */}
+          <div class="text-center mb-6">
+            <span class="text-5xl block mb-2">🐱</span>
+            <h1 class="text-2xl font-bold text-slate-800 m-0">Welcome Back</h1>
+            <p class="text-slate-500 text-sm mt-1 m-0">Log in to Herding Cats</p>
           </div>
 
-          {/* Password */}
-          <div class={styles.fieldGroup}>
-            <label class={styles.label} for="password">
-              Password
-            </label>
-            <div class={styles.passwordWrapper}>
+          {/* Error */}
+          {loginAction.value?.error && (
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">
+              {loginAction.value.error}
+            </div>
+          )}
+
+          <Form action={loginAction} class="space-y-4">
+            {/* Email */}
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-slate-700" for="email">
+                Email
+              </label>
               <input
-                class={[
-                  styles.input,
-                  loginAction.value?.fieldErrors?.password
-                    ? styles.inputError
-                    : "",
-                ]}
-                id="password"
-                name="password"
-                type={showPassword.value ? "text" : "password"}
-                placeholder="Enter your password"
-                autoComplete="current-password"
+                class={`w-full px-4 py-2.5 border rounded-xl text-slate-800 placeholder-slate-400
+                  focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all
+                  ${loginAction.value?.fieldErrors?.email ? "border-red-400" : "border-slate-300"}`}
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
                 required
               />
-              <button
-                class={styles.passwordToggle}
-                type="button"
-                onClick$={() => {
-                  showPassword.value = !showPassword.value;
-                }}
-                aria-label={showPassword.value ? "Hide password" : "Show password"}
-              >
-                {showPassword.value ? "Hide" : "Show"}
-              </button>
+              {loginAction.value?.fieldErrors?.email && (
+                <p class="text-red-500 text-sm">{loginAction.value.fieldErrors.email}</p>
+              )}
             </div>
-            {loginAction.value?.fieldErrors?.password && (
-              <p class={styles.fieldError}>
-                {loginAction.value.fieldErrors.password}
-              </p>
-            )}
+
+            {/* Password */}
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-slate-700" for="password">
+                Password
+              </label>
+              <div class="relative">
+                <input
+                  class={`w-full px-4 py-2.5 border rounded-xl text-slate-800 placeholder-slate-400
+                    focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all pr-16
+                    ${loginAction.value?.fieldErrors?.password ? "border-red-400" : "border-slate-300"}`}
+                  id="password"
+                  name="password"
+                  type={showPassword.value ? "text" : "password"}
+                  placeholder="Your password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-amber-600 font-medium cursor-pointer bg-transparent border-none"
+                  type="button"
+                  onClick$={() => {
+                    showPassword.value = !showPassword.value;
+                  }}
+                >
+                  {showPassword.value ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer border-none text-base disabled:opacity-50"
+              type="submit"
+              disabled={loginAction.isRunning}
+            >
+              {loginAction.isRunning ? (
+                <span class="flex items-center justify-center gap-2">
+                  <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Logging in…
+                </span>
+              ) : (
+                "Log In"
+              )}
+            </button>
+          </Form>
+
+          {/* Divider */}
+          <div class="flex items-center gap-3 my-6">
+            <div class="flex-1 h-px bg-slate-200" />
+            <span class="text-xs text-slate-400">New here?</span>
+            <div class="flex-1 h-px bg-slate-200" />
           </div>
 
-          {/* Submit */}
-          <button
-            class={styles.submitBtn}
-            type="submit"
-            disabled={loginAction.isRunning}
-          >
-            {loginAction.isRunning ? (
-              <>
-                <span class={styles.spinner} />
-                Signing in…
-              </>
-            ) : (
-              "Log In"
-            )}
-          </button>
-        </Form>
-
-        {/* Divider */}
-        <div class={styles.divider}>
-          <span class={styles.dividerLine} />
-          <span class={styles.dividerText}>New here?</span>
-          <span class={styles.dividerLine} />
+          <p class="text-center text-sm text-slate-500 m-0">
+            You need an invite to join.{" "}
+            <a href="/signup" class="text-amber-600 hover:text-amber-700 font-medium">
+              Register with invite →
+            </a>
+          </p>
         </div>
-
-        {/* Footer */}
-        <p class={styles.footerLink}>
-          Have an invite?{" "}
-          <a href="/signup">Sign up here</a>
-        </p>
       </div>
     </div>
   );
@@ -206,7 +179,7 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Sign in to your Herding Cats account to manage events and earn Karma.",
+      content: "Log in to your Herding Cats account.",
     },
   ],
 };

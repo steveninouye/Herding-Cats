@@ -1,74 +1,61 @@
+// src/routes/index.tsx
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
+import { getSessionUser } from "~/server/auth";
+
+/**
+ * Redirect logged-in users to dashboard.
+ */
+export const useRedirectIfAuthed = routeLoader$(async (requestEvent) => {
+  const user = await getSessionUser(requestEvent);
+  if (user) {
+    throw requestEvent.redirect(302, "/dashboard");
+  }
+  return {};
+});
 
 export default component$(() => {
+  useRedirectIfAuthed();
   const activeFeature = useSignal(0);
 
   const features = [
     {
-      icon: "fa-users-gear",
+      icon: "⚽",
       title: "Groups & Events",
-      desc: "Create private, visible, or public groups. Organize events with hard-cap RSVPs, waitlists, and priority queuing.",
+      desc: "Create private groups. Organize events with hard-cap RSVPs and automatic waitlists.",
     },
     {
-      icon: "fa-hand-holding-heart",
-      title: "Community Karma",
-      desc: "Earn Karma by contributing to your community—show up on time, lend a hand, bring gear. Your good vibes come back to you.",
+      icon: "💛",
+      title: "Community First",
+      desc: "Built around the idea of people helping people. Show up, pitch in, be awesome.",
     },
     {
-      icon: "fa-location-dot",
-      title: "Geo Check-In",
-      desc: "Privacy-first geolocation check-in. No location data stored—just a simple confirmation you showed up.",
-    },
-    {
-      icon: "fa-calendar-check",
+      icon: "📋",
       title: "Smart RSVPs",
-      desc: "The more you contribute, the better your priority. Reliable community members get first dibs on events.",
+      desc: "24-person cap with automatic waitlist promotion. Fair, first-come-first-served.",
     },
     {
-      icon: "fa-building",
-      title: "Venue Management",
-      desc: "Register locations, manage reservations, and control calendar visibility. Perfect for facility owners.",
+      icon: "🔗",
+      title: "Invite Codes",
+      desc: "Share a simple code to grow your group. Easy for everyone.",
     },
     {
-      icon: "fa-envelope-open-text",
-      title: "Invite-Only Access",
-      desc: "A trusted community starts with trusted people. Every member is vouched for through a tracked invite chain.",
+      icon: "📱",
+      title: "Mobile Friendly",
+      desc: "Works great on any device. RSVP from anywhere.",
+    },
+    {
+      icon: "⚡",
+      title: "Lightning Fast",
+      desc: "Built on Cloudflare's edge network. Instant page loads worldwide.",
     },
   ];
 
   const howItWorks = [
-    {
-      step: "1",
-      icon: "✉️",
-      title: "Get Invited",
-      desc: "A current member sends you an invite link to join the platform.",
-    },
-    {
-      step: "2",
-      icon: "🤝",
-      title: "Join Groups",
-      desc: "Find your people—sports leagues, game nights, meetups, and more.",
-    },
-    {
-      step: "3",
-      icon: "🎉",
-      title: "RSVP & Contribute",
-      desc: "Claim your spot and pitch in. Bring gear, help set up, be awesome.",
-    },
-    {
-      step: "4",
-      icon: "⭐",
-      title: "Earn Karma",
-      desc: "Every contribution earns Karma. Track your impact and unlock priority access.",
-    },
-  ];
-
-  const karmaActions = [
-    { label: "Showed up on time", icon: "⏰", positive: true },
-    { label: "Brought gear", icon: "🎒", positive: true },
-    { label: "Helped out", icon: "🙌", positive: true },
-    { label: "Made someone's day", icon: "💛", positive: true },
+    { step: "1", icon: "✉️", title: "Get Invited", desc: "A current member sends you an invite link to join." },
+    { step: "2", icon: "🤝", title: "Join Groups", desc: "Find your people — soccer leagues, game nights, and more." },
+    { step: "3", icon: "🎉", title: "RSVP & Play", desc: "Claim your spot. First 24 confirmed, rest go to waitlist." },
+    { step: "4", icon: "⭐", title: "Have Fun", desc: "Show up, play hard, and enjoy your community." },
   ];
 
   useVisibleTask$(() => {
@@ -83,16 +70,16 @@ export default component$(() => {
       {/* Hero */}
       <div class="hero-section">
         <div class="container container-center">
-          <p class="hero-badge">🐱 Invite-Only Community Platform</p>
+          <p class="hero-badge">🐱 Community Event Platform</p>
           <h1>
             People Helping People.
             <br />
             <span class="highlight">That's the Whole Idea.</span>
           </h1>
           <p class="hero-subtitle">
-            Herding Cats is a community-first event platform where your
-            contributions matter. Show up, pitch in, earn Karma—and get
-            priority access to the events you love.
+            Herding Cats is a community-first event platform. Organize your
+            group, manage RSVPs with a 24-person cap, and automatic waitlist
+            promotion.
           </p>
           <div class="hero-buttons">
             <a href="/login" class="button button-primary">
@@ -109,41 +96,6 @@ export default component$(() => {
         </div>
       </div>
 
-      {/* Karma Preview */}
-      <div class="karma-section">
-        <div class="container">
-          <div class="karma-card">
-            <div class="karma-header">
-              <h3>🌟 Your Karma Journey</h3>
-              <p>
-                Every time you contribute to your community, you earn Karma.
-                It's our way of saying <strong>thank you</strong> for being
-                awesome.
-              </p>
-            </div>
-            <div class="karma-grid">
-              {karmaActions.map((action) => (
-                <div key={action.label} class="karma-action">
-                  <span class="karma-action-icon">{action.icon}</span>
-                  <span class="karma-action-label">{action.label}</span>
-                  <span class="karma-action-badge">+Karma</span>
-                </div>
-              ))}
-            </div>
-            <div class="karma-score-display">
-              <div class="karma-score-ring">
-                <span class="karma-score-number">92.5</span>
-                <span class="karma-score-label">Your Karma</span>
-              </div>
-              <p class="karma-score-message">
-                You're a community rockstar! 🎸 Your contributions have earned
-                you priority access to upcoming events.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Features */}
       <div class="features-section">
         <div class="container container-center">
@@ -151,8 +103,7 @@ export default component$(() => {
             Built for <span class="highlight">Community</span>
           </h2>
           <p class="section-subtitle">
-            Every feature is designed to make organizing easier and reward the
-            people who make events great.
+            Every feature is designed to make organizing easier and keep things fair.
           </p>
           <div class="features-grid">
             {features.map((f, i) => (
@@ -163,9 +114,7 @@ export default component$(() => {
                   activeFeature.value = i;
                 }}
               >
-                <div class="feature-icon">
-                  <i class={`fa-solid ${f.icon}`}></i>
-                </div>
+                <div class="feature-icon">{f.icon}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
@@ -181,7 +130,7 @@ export default component$(() => {
             How It <span class="highlight">Works</span>
           </h2>
           <p class="section-subtitle">
-            Four simple steps to becoming a valued community contributor.
+            Four simple steps to getting in the game.
           </p>
           <div class="steps-grid">
             {howItWorks.map((item) => (
@@ -205,8 +154,7 @@ export default component$(() => {
             That <span class="highlight">Values You</span>?
           </h2>
           <p class="cta-subtitle">
-            Herding Cats is invite-only—ask a current member to send you an
-            invite and start earning Karma today.
+            Ask a current member to send you an invite and start playing today.
           </p>
           <div class="hero-buttons">
             <a href="/login" class="button button-primary">
@@ -216,10 +164,6 @@ export default component$(() => {
               Register with Invite
             </a>
           </div>
-          <p class="cta-invite-note">
-            Don't have an invite? Ask a friend who's already on the platform to
-            invite you. That's how we keep the community trusted and strong. 💛
-          </p>
         </div>
       </div>
     </>
@@ -227,12 +171,12 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Herding Cats — Invite-Only Community Event Management",
+  title: "Herding Cats — Community Event Management",
   meta: [
     {
       name: "description",
       content:
-        "An invite-only event platform built around community contributions. Organize groups, manage events, earn Karma, and get priority access by being a great community member.",
+        "A community-first event platform. Organize groups, manage RSVPs with a 24-person cap, and automatic waitlist promotion.",
     },
   ],
 };

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, AnySQLiteColumn, index } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 // ─── USERS ───────────────────────────────────────────────
@@ -17,14 +17,12 @@ export const users = sqliteTable("users", {
         .default("pending"),
     socialScore: real("social_score").notNull().default(100.0),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    // ─── Platform-level ban (Herding Cats admins only) ───
     isPlatformBanned: integer("is_platform_banned", { mode: "boolean" })
         .notNull()
         .default(false),
     platformBannedAt: text("platform_banned_at"),
     platformBannedBy: integer("platform_banned_by").references((): AnySQLiteColumn => users.id),
     platformBanReason: text("platform_ban_reason"),
-    // ─── Platform admin flag ───
     isPlatformAdmin: integer("is_platform_admin", { mode: "boolean" })
         .notNull()
         .default(false),
@@ -41,6 +39,7 @@ export const groups = sqliteTable("groups", {
     id: integer("id").primaryKey({ autoIncrement: true }),
     name: text("name").notNull(),
     description: text("description"),
+    inviteCode: text("invite_code").notNull().unique(),
     createdBy: integer("created_by")
         .notNull()
         .references(() => users.id),
@@ -68,7 +67,6 @@ export const groupMembers = sqliteTable("group_members", {
         .notNull()
         .default("member"),
     groupDisplayName: text("group_display_name"),
-    // ─── Group-level ban (group admins/owners) ───
     isBanned: integer("is_banned", { mode: "boolean" }).notNull().default(false),
     bannedAt: text("banned_at"),
     bannedBy: integer("banned_by").references(() => users.id),
@@ -81,11 +79,11 @@ export const groupMembers = sqliteTable("group_members", {
 // ─── LOCATIONS (venues) ──────────────────────────────────
 export const locations = sqliteTable("locations", {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),                    // "Google Soccer Field A"
+    name: text("name").notNull(),
     address: text("address"),
     lat: real("lat"),
     lng: real("lng"),
-    checkInRadius: integer("check_in_radius").default(100), // meters
+    checkInRadius: integer("check_in_radius").default(100),
     description: text("description"),
     createdBy: integer("created_by")
         .notNull()
@@ -135,7 +133,7 @@ export const events = sqliteTable("events", {
         .default("public"),
     startTime: text("start_time").notNull(),
     endTime: text("end_time"),
-    maxAttendees: integer("max_attendees").notNull(),
+    maxAttendees: integer("max_attendees").notNull().default(24),
     googleCalendarEventId: text("google_calendar_event_id"),
     status: text("status", { enum: ["draft", "open", "closed", "cancelled"] })
         .notNull()
@@ -156,7 +154,7 @@ export const reservations = sqliteTable("reservations", {
     locationId: integer("location_id")
         .notNull()
         .references(() => locations.id),
-    eventId: integer("event_id").references(() => events.id), // linked after approval
+    eventId: integer("event_id").references(() => events.id),
     requestedBy: integer("requested_by")
         .notNull()
         .references(() => users.id),
@@ -167,14 +165,12 @@ export const reservations = sqliteTable("reservations", {
     })
         .notNull()
         .default("pending"),
-    // ─── Pricing ───
-    fee: real("fee").default(0),                     // 0 = free
+    fee: real("fee").default(0),
     isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(false),
-    // ─── Approval tracking ───
     reviewedBy: integer("reviewed_by").references(() => users.id),
     reviewedAt: text("reviewed_at"),
     rejectionReason: text("rejection_reason"),
-    message: text("message"),                        // note from requester
+    message: text("message"),
     createdAt: text("created_at")
         .notNull()
         .default(sql`(datetime('now'))`),
@@ -199,6 +195,7 @@ export const rsvps = sqliteTable("rsvps", {
     })
         .notNull()
         .default("waitlisted"),
+    waitlistPosition: integer("waitlist_position"),
     checkedIn: integer("checked_in", { mode: "boolean" }).notNull().default(false),
     checkedInAt: text("checked_in_at"),
 });
@@ -218,10 +215,9 @@ export const rsvpHistory = sqliteTable("rsvp_history", {
     action: text("action", {
         enum: ["rsvp_created", "rsvp_cancelled", "status_changed", "checked_in"],
     }).notNull(),
-    fromStatus: text("from_status"), // nullable — null on first creation
+    fromStatus: text("from_status"),
     toStatus: text("to_status").notNull(),
-    // ─── Timing context for karma decisions ───
-    minutesBeforeEvent: integer("minutes_before_event"), // how far out the action happened
+    minutesBeforeEvent: integer("minutes_before_event"),
     createdAt: text("created_at")
         .notNull()
         .default(sql`(datetime('now'))`),
@@ -271,8 +267,19 @@ export const joinRequests = sqliteTable("join_requests", {
         .default("pending"),
     reviewedBy: integer("reviewed_by").references(() => users.id),
     reviewedAt: text("reviewed_at"),
-    message: text("message"), // optional note from the requester
+    message: text("message"),
     createdAt: text("created_at")
         .notNull()
         .default(sql`(datetime('now'))`),
 });
+
+// ─── TYPE EXPORTS ────────────────────────────────────────
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Group = typeof groups.$inferSelect;
+export type NewGroup = typeof groups.$inferInsert;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;
+export type RSVP = typeof rsvps.$inferSelect;
+export type NewRSVP = typeof rsvps.$inferInsert;
