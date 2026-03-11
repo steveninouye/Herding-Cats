@@ -1,5 +1,5 @@
 // src/routes/events/[eventId]/index.tsx
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import {
   routeLoader$,
   routeAction$,

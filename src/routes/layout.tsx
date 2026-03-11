@@ -5,36 +5,29 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { Header } from "~/components/Header";
 import { getSessionUser } from "~/server/auth";
 
+// Required by src/components/starter/footer/footer.tsx
+export const useServerTimeLoader = routeLoader$(() => {
+  return { date: new Date().toISOString() };
+});
+
 export const useCurrentUser = routeLoader$(async (requestEvent) => {
   const user = await getSessionUser(requestEvent);
   return user;
 });
 
+export const onGet: RequestHandler = async ({ cacheControl }) => {
+  cacheControl({ staleWhileRevalidate: 60 * 60 * 24 * 7, maxAge: 5 });
+};
+
 export default component$(() => {
   const user = useCurrentUser();
 
   return (
-    <div class="min-h-screen bg-slate-50">
+    <>
       <Header user={user.value} />
       <main>
         <Slot />
       </main>
-    </div>
+    </>
   );
 });
-
-const PUBLIC_PATHS = ["/", "/login", "/signup", "/invite"];
-
-export const onRequest: RequestHandler = async (requestEvent) => {
-  const path = requestEvent.url.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) =>
-    p === "/" ? path === "/" : path.startsWith(p)
-  );
-
-  if (!isPublic) {
-    const user = await getSessionUser(requestEvent);
-    if (!user) {
-      throw requestEvent.redirect(302, "/login");
-    }
-  }
-};
