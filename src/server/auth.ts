@@ -1,5 +1,5 @@
 // src/server/auth.ts
-import { type RequestEvent } from "@builder.io/qwik-city";
+import type { RequestEvent, RequestEventLoader, RequestEventAction } from "@builder.io/qwik-city";
 import { eq } from "drizzle-orm";
 import { getDb } from "~/db";
 import { users } from "~/db/schema";
@@ -12,12 +12,17 @@ export interface AuthUser {
   isPlatformAdmin: boolean;
 }
 
+type QwikRequestEvent =
+  | RequestEvent
+  | RequestEventLoader
+  | RequestEventAction;
+
 /**
  * Extract the current user from the session cookie.
  * Returns null if not authenticated.
  */
 export async function getSessionUser(
-  requestEvent: RequestEvent
+  requestEvent: QwikRequestEvent
 ): Promise<AuthUser | null> {
   const token = requestEvent.cookie.get("session")?.value;
   if (!token) return null;
