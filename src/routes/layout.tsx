@@ -5,6 +5,9 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { Header } from "~/components/Header";
 import { getSessionUser } from "~/server/auth";
 
+// Import global styles
+import "./styles.css";
+
 // Required by src/components/starter/footer/footer.tsx
 export const useServerTimeLoader = routeLoader$(() => {
   return { date: new Date().toISOString() };
